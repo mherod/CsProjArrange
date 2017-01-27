@@ -13,13 +13,6 @@ namespace CsProjArrange
         public NodeNameComparer(IList<string> stickyElementNames = null, CsProjArrange.ArrangeOptions options = CsProjArrange.ArrangeOptions.None)
         {
             StickyElementNames = stickyElementNames ?? new string[] { };
-            Options = options;
-        }
-
-        public CsProjArrange.ArrangeOptions Options
-        {
-            get;
-            set;
         }
 
         public IList<string> StickyElementNames
@@ -38,7 +31,7 @@ namespace CsProjArrange
             var stickyElement2 = StickyElementNames.IndexOf(yName);
             if ((stickyElement1 == -1) && (stickyElement2 == -1))
             {
-                return String.Compare(xName, yName);
+                return String.Compare(xName, yName, StringComparison.InvariantCulture);
             }
             return Compare(stickyElement1, stickyElement2);
         }
@@ -60,34 +53,11 @@ namespace CsProjArrange
         private string GetName(XNode node)
         {
             string name = null;
-            if (node.NodeType == XmlNodeType.Comment) {
-                name = GetNextClosestElementName(node);
-            }
             if (node.NodeType == XmlNodeType.Element) {
                 name = ((XElement)node).Name.LocalName;
-                if (Options.HasFlag(CsProjArrange.ArrangeOptions.KeepImportWithNext)) {
-                    if (name == "Import") {
-                        // HACK: Need to figure out how to handle import. Just sticking to next element for now.
-                        name = GetNextClosestElementName(node.NextNode);
-                    }
-                }
             }
 
             return name;
-        }
-
-        private string GetNextClosestElementName(XNode node)
-        {
-            XElement result;
-            XNode current = node;
-            while (((result = current as XElement) == null) && ((current = current.NextNode) != null)) {
-                // Everything is already done in the condition.
-            }
-            if (result == null) {
-                return null;
-            }
-
-            return result.Name.LocalName;
         }
     }
 }
